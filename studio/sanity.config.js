@@ -3,7 +3,7 @@ import { structureTool } from 'sanity/structure'
 import { visionTool } from '@sanity/vision'
 import { presentationTool } from 'sanity/presentation'
 import { schemaTypes } from './schemaTypes'
-import { CogIcon, TagIcon, UserIcon, StarIcon, HomeIcon } from '@sanity/icons'
+import { CogIcon, TagIcon, UserIcon, StarIcon, HomeIcon, EnvelopeIcon } from '@sanity/icons'
 
 const SINGLETONS = ['siteSettings', 'whyUs', 'gymShowcase']
 // Actual document IDs in the dataset (UUID-based)
@@ -19,6 +19,15 @@ const structure = (S) =>
   S.list()
     .title('TrainStation Guernsey')
     .items([
+      S.listItem()
+        .title('Trial Bookings & Enquiries')
+        .icon(EnvelopeIcon)
+        .child(
+          S.documentTypeList('enquiry')
+            .title('Trial Bookings & Enquiries')
+            .defaultOrdering([{ field: 'submittedAt', direction: 'desc' }])
+        ),
+      S.divider(),
       S.listItem()
         .title('Site Settings')
         .icon(CogIcon)

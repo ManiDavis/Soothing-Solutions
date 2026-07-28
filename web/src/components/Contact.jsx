@@ -34,6 +34,8 @@ function InfoItem({ icon, label, value, href }) {
 export default function Contact() {
   const ref = useRef(null)
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', interest: '' })
   const [settings, setSettings] = useState(null)
 
@@ -54,7 +56,27 @@ export default function Contact() {
   }, [])
 
   const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  const handleSubmit = e => { e.preventDefault(); setSubmitted(true) }
+  const handleSubmit = async e => {
+    e.preventDefault()
+    setSubmitError('')
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/enquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Something went wrong. Please try again.')
+      }
+      setSubmitted(true)
+    } catch (err) {
+      setSubmitError(err.message || 'Something went wrong. Please try again or call us directly.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   const phone = settings?.phone || '01481 726684'
   const email = settings?.email || 'info@thetrainstation.co.gg'
@@ -164,8 +186,14 @@ export default function Contact() {
 
                   <FormField label="Message" name="message" value={form.message} onChange={handleChange} placeholder="Tell us about your goals…" textarea />
 
-                  <button type="submit" className="btn btn-red" style={{ justifyContent: 'center', marginTop: 8, fontSize: '0.95rem' }}>
-                    Send Message →
+                  {submitError && (
+                    <p style={{ fontSize: '0.85rem', color: 'var(--red)', textAlign: 'center', margin: 0 }}>
+                      {submitError}
+                    </p>
+                  )}
+
+                  <button type="submit" className="btn btn-red" disabled={submitting} style={{ justifyContent: 'center', marginTop: 8, fontSize: '0.95rem', opacity: submitting ? 0.7 : 1, cursor: submitting ? 'default' : 'pointer' }}>
+                    {submitting ? 'Sending…' : 'Send Message →'}
                   </button>
 
                   <p style={{ fontSize: '0.78rem', color: 'var(--muted)', textAlign: 'center' }}>
