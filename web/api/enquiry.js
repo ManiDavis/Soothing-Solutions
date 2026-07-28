@@ -17,7 +17,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { name, email, phone, interest, message } = req.body || {}
+  const { phone, interest, message } = req.body || {}
+  const name = (req.body?.name || '').replace(/[\r\n]+/g, ' ').trim()
+  const email = (req.body?.email || '').replace(/[\r\n]+/g, ' ').trim()
 
   if (!name || !email) {
     return res.status(400).json({ error: 'Name and email are required.' })
@@ -50,9 +52,10 @@ export default async function handler(req, res) {
       const { Resend } = await import('resend')
       const resend = new Resend(process.env.RESEND_API_KEY)
       const interestLabel = interest === 'free-trial' ? 'Free Trial' : interest || 'Enquiry'
+      const notifyFromName = FROM_EMAIL.replace(/^([^<]+)</, `${name} via $1<`)
 
       await resend.emails.send({
-        from: FROM_EMAIL,
+        from: notifyFromName,
         to: NOTIFY_EMAIL,
         replyTo: email,
         subject: `New ${interestLabel} enquiry — ${name}`,
